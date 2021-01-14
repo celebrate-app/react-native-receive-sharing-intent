@@ -61,7 +61,7 @@ class ReceiveSharingIntent: NSObject {
                             return SharedMediaFile.init(path: path, thumbnail: nil, duration: $0.duration, type: $0.type)
                         }
                         
-                        return SharedMediaFile.init(path: path, thumbnail: nil, duration: $0.duration, type: $0.type)
+                        return SharedMediaFile.init(path: path, thumbnail: nil, duration: $0.duration, type: $0.type, extra: $0.extra)
                     }
                     latestMedia = sharedMediaFiles
                     let json = toJson(data: latestMedia);
@@ -75,7 +75,7 @@ class ReceiveSharingIntent: NSObject {
                         guard let path = getAbsolutePath(for: $0.path) else {
                             return nil
                         }
-                        return SharedMediaFile.init(path: path, thumbnail: nil, duration: nil, type: $0.type)
+                        return SharedMediaFile.init(path: path, thumbnail: nil, duration: nil, type: $0.type, extra: $0.extra)
                     }
                     latestMedia = sharedMediaFiles
                      let json = toJson(data: latestMedia);
@@ -156,13 +156,14 @@ class ReceiveSharingIntent: NSObject {
         var thumbnail: String?; // video thumbnail
         var duration: Double?; // video duration in milliseconds
         var type: SharedMediaType;
+        var extra: String?;
         
-        
-        init(path: String, thumbnail: String?, duration: Double?, type: SharedMediaType) {
+        init(path: String, thumbnail: String?, duration: Double?, type: SharedMediaType, extra: String? = nil) {
             self.path = path
             self.thumbnail = thumbnail
             self.duration = duration
             self.type = type
+            self.extra = extra
         }
     }
     
