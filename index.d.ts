@@ -7,6 +7,7 @@ declare namespace ReceiveSharingIntent {
         contentUri: string|null;
         fileName: string|null;
         extension: string|null;
+        extra: any;
     }
     
     export type ShareIntentResponse = ShareIntentFile[];
