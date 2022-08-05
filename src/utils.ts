@@ -35,7 +35,8 @@ class Utils implements IUtils{
                         fileName: this.getFileName(path),
                         extension: this.getExtension(path),
                         mimeType: this.getMimeType(path),
-                        filePath: path
+                        filePath: path,
+                        extra: files[i].extra
                     }
                     object.push(obj);
                 }

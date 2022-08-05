@@ -15,4 +15,5 @@ export interface IReturnData{
     contentUri?: any | string,
     fileName?: any | string, 
     extension?: any | string,
+    extra: any,
 }
