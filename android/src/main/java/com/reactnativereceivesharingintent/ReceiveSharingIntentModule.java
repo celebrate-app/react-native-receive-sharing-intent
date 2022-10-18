@@ -18,6 +18,9 @@ public class ReceiveSharingIntentModule extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
   private ReceiveSharingIntentHelper receiveSharingIntentHelper;
+  // NOTE: checking old intent resolves android issue on initialization
+  // https://github.com/ajith-ab/react-native-receive-sharing-intent/issues/110#issuecomment-971612714
+  private Intent oldIntent;
 
   public ReceiveSharingIntentModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -30,6 +33,7 @@ public class ReceiveSharingIntentModule extends ReactContextBaseJavaModule {
   protected void onNewIntent(Intent intent) {
     Activity mActivity = getCurrentActivity();
     if(mActivity == null) { return; }
+    oldIntent = mActivity.getIntent();
     mActivity.setIntent(intent);
   }
 
@@ -40,7 +44,9 @@ public class ReceiveSharingIntentModule extends ReactContextBaseJavaModule {
     if(mActivity == null) { return; }
     Intent intent = mActivity.getIntent();
     receiveSharingIntentHelper.sendFileNames(reactContext, intent, promise);
-    mActivity.setIntent(null);
+    if (oldIntent != null) {
+      mActivity.setIntent(oldIntent);
+    }
   }
 
   @ReactMethod
