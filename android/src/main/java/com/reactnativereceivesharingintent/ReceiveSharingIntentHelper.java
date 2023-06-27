@@ -282,11 +282,11 @@ public class ReceiveSharingIntentHelper {
             )
           );
 
+          file.putMap("exif", exif);
+
           File tempFile = new File(filePath);
           long fileSize = tempFile.length();
           file.putInt("fileSize", Math.toIntExact(fileSize));
-
-          files.putMap("exif", exif);
 
           files.putMap(Integer.toString(index), file);
 
