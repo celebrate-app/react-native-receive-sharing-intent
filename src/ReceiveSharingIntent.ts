@@ -12,7 +12,6 @@ class ReceiveSharingIntentModule implements IReceiveSharingIntent {
   private isIos: boolean = Platform.OS === 'ios';
   private utils: IUtils = new Utils();
   private isClear: boolean = false;
-  private sharedFiles: string[] = [];
 
   getReceivedFiles(
     handler: Function,
@@ -44,6 +43,7 @@ class ReceiveSharingIntentModule implements IReceiveSharingIntent {
   }
 
   clearReceivedFiles() {
+    // https://github.com/ajith-ab/react-native-receive-sharing-intent/issues/149
     // this.isClear = true;
     ReceiveSharingIntent.clearFileNames();
   }
@@ -57,23 +57,7 @@ class ReceiveSharingIntentModule implements IReceiveSharingIntent {
       ReceiveSharingIntent.getFileNames(url)
         .then((data: any) => {
           const files = this.utils.sortData(data);
-
-          // Ignore the files already shared/canceled
-          // otherwise, 'getFileNames' method will be returning same data again and again
-          const filesToShare: any = files.reduce(
-            (totalFiles: any, currentFile: any) => {
-              const fileName = currentFile.fileName;
-
-              if (!this.sharedFiles.includes(fileName)) {
-                totalFiles.push(currentFile);
-              }
-              this.sharedFiles.push(fileName);
-
-              return totalFiles;
-            },
-            [],
-          );
-          handler(filesToShare);
+          handler(files);
         })
         .catch((e: any) => errorHandler(e));
     } else {
