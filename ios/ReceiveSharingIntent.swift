@@ -11,6 +11,7 @@ class ReceiveSharingIntent: NSObject {
     private var initialText: String? = nil
     private var latestText: String? = nil
     
+    private var userDefaultsKey: String? = nil
     
     @objc
     func getFileNames(_ url: String,
@@ -40,6 +41,7 @@ class ReceiveSharingIntent: NSObject {
             if url.fragment == "media" {
                 if let key = url.host?.components(separatedBy: "=").last,
                     let json = userDefaults?.object(forKey: key) as? Data {
+                    userDefaultsKey = key
                     let sharedArray = decode(data: json)
                     let sharedMediaFiles: [SharedMediaFile] = sharedArray.compactMap {
                         guard let path = getAbsolutePath(for: $0.path) else {
@@ -61,6 +63,7 @@ class ReceiveSharingIntent: NSObject {
             } else if url.fragment == "file" {
                 if let key = url.host?.components(separatedBy: "=").last,
                     let json = userDefaults?.object(forKey: key) as? Data {
+                    userDefaultsKey = key
                     let sharedArray = decode(data: json)
                     let sharedMediaFiles: [SharedMediaFile] = sharedArray.compactMap{
                         guard let path = getAbsolutePath(for: $0.path) else {
@@ -75,7 +78,8 @@ class ReceiveSharingIntent: NSObject {
             } else if url.fragment == "text" {
                 if let key = url.host?.components(separatedBy: "=").last,
                     let sharedArray = userDefaults?.object(forKey: key) as? [String] {
-                    latestText =  sharedArray.joined(separator: ",")
+                    userDefaultsKey = key
+                    latestText = sharedArray.joined(separator: ",")
                     
                     let optionalString = latestText;
                     if let unwrapped = optionalString {
@@ -167,7 +171,13 @@ class ReceiveSharingIntent: NSObject {
     
     @objc
     func clearFileNames(){
-        print("clearFileNames");
+        let appDomain = Bundle.main.bundleIdentifier!
+        
+        let userDefaults = UserDefaults(suiteName: "group.\(appDomain)")
+        
+        if let userDefaultsKey = userDefaultsKey {
+            userDefaults?.removeObject(forKey: userDefaultsKey)
+        }
     }
     
 
