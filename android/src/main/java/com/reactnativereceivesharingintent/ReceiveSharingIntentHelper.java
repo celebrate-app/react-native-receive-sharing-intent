@@ -488,7 +488,9 @@ public class ReceiveSharingIntentHelper {
     } else if (
       type.startsWith("image") ||
       type.startsWith("video") ||
-      type.startsWith("application")
+      type.startsWith("application") ||
+      // */* covers case when Video and Images were shared together
+      type.startsWith("*/*")
     ) {
       intent.removeExtra(Intent.EXTRA_STREAM);
     }
