@@ -179,6 +179,7 @@ public class ReceiveSharingIntentHelper {
     } catch (Exception ignored) {}
 
     WritableMap files = new WritableNativeMap();
+
     if (Objects.equals(intent.getAction(), Intent.ACTION_SEND)) {
       WritableMap file = new WritableNativeMap();
       Uri contentUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -203,6 +204,10 @@ public class ReceiveSharingIntentHelper {
           queryResult.getColumnIndex(OpenableColumns.DISPLAY_NAME)
         )
       );
+      file.putString(
+        "fileSize",
+        queryResult.getString(queryResult.getColumnIndex(OpenableColumns.SIZE))
+      );
       file.putString("filePath", filePath);
       file.putString("contentUri", contentUri.toString());
       file.putString("text", null);
@@ -210,22 +215,20 @@ public class ReceiveSharingIntentHelper {
       file.putString("subject", subject);
 
       WritableMap exif = getExif(contentUri.toString());
-      exif.putString(
-        "DateTimeModified",
-        queryResult.getString(
-          queryResult.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED)
-        )
-      );
-      exif.putString(
-        "ImageOrientation",
-        queryResult.getString(
-          queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
-        )
-      );
-
-      File tempFile = new File(filePath);
-      long fileSize = tempFile.length();
-      file.putInt("fileSize", Math.toIntExact(fileSize));
+      try {
+        exif.putString(
+          "DateTimeModified",
+          queryResult.getString(
+            queryResult.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED)
+          )
+        );
+        exif.putString(
+          "ImageOrientation",
+          queryResult.getString(
+            queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
+          )
+        );
+      } catch (Exception e) {}
 
       file.putMap("exif", exif);
 
@@ -262,6 +265,12 @@ public class ReceiveSharingIntentHelper {
               queryResult.getColumnIndex(OpenableColumns.DISPLAY_NAME)
             )
           );
+          file.putString(
+            "fileSize",
+            queryResult.getString(
+              queryResult.getColumnIndex(OpenableColumns.SIZE)
+            )
+          );
           file.putString("filePath", filePath);
           file.putString("contentUri", uri.toString());
           file.putString("text", null);
@@ -269,24 +278,25 @@ public class ReceiveSharingIntentHelper {
           file.putString("subject", subject);
 
           WritableMap exif = getExif(uri.toString());
-          exif.putString(
-            "DateTimeModified",
-            queryResult.getString(
-              queryResult.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED)
-            )
-          );
-          exif.putString(
-            "ImageOrientation",
-            queryResult.getString(
-              queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
-            )
-          );
-
+          try {
+            exif.putString(
+              "DateTimeModified",
+              queryResult.getString(
+                queryResult.getColumnIndex(
+                  MediaStore.Images.Media.DATE_MODIFIED
+                )
+              )
+            );
+            exif.putString(
+              "ImageOrientation",
+              queryResult.getString(
+                queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
+              )
+            );
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
           file.putMap("exif", exif);
-
-          File tempFile = new File(filePath);
-          long fileSize = tempFile.length();
-          file.putInt("fileSize", Math.toIntExact(fileSize));
 
           files.putMap(Integer.toString(index), file);
 
@@ -294,6 +304,7 @@ public class ReceiveSharingIntentHelper {
         }
       }
     }
+
     return files;
   }
 
@@ -320,6 +331,7 @@ public class ReceiveSharingIntentHelper {
 
       return exifMap;
     } catch (Exception e) {
+      e.printStackTrace();
       WritableMap exifMap = new WritableNativeMap();
       return exifMap;
     }
