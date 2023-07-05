@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -17,6 +16,7 @@ import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import com.facebook.react.bridge.*;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -36,13 +36,12 @@ public class ReceiveSharingIntentHelper {
     this.context = context;
   }
 
-  // https://developer.android.com/reference/androidx/exifinterface/media/ExifInterface#constants
+  // https://developer.android.com/reference/androidx/exifinterface/media/ExifInterface
   private static final String[] EXIF_ATTRIBUTES = new String[] {
     ExifInterface.TAG_DATETIME,
     ExifInterface.TAG_DATETIME_ORIGINAL,
     ExifInterface.TAG_IMAGE_LENGTH,
     ExifInterface.TAG_IMAGE_WIDTH,
-    ExifInterface.TAG_APERTURE,
     ExifInterface.TAG_DATETIME_DIGITIZED,
     ExifInterface.TAG_EXPOSURE_TIME,
     ExifInterface.TAG_FLASH,
@@ -56,15 +55,12 @@ public class ReceiveSharingIntentHelper {
     ExifInterface.TAG_GPS_LONGITUDE_REF,
     ExifInterface.TAG_GPS_PROCESSING_METHOD,
     ExifInterface.TAG_GPS_TIMESTAMP,
-    ExifInterface.TAG_ISO,
     ExifInterface.TAG_MAKE,
     ExifInterface.TAG_MODEL,
     ExifInterface.TAG_ORIENTATION,
     ExifInterface.TAG_X_RESOLUTION,
     ExifInterface.TAG_Y_RESOLUTION,
     ExifInterface.TAG_SUBSEC_TIME,
-    ExifInterface.TAG_SUBSEC_TIME_DIG,
-    ExifInterface.TAG_SUBSEC_TIME_ORIG,
     ExifInterface.TAG_WHITE_BALANCE,
     ExifInterface.TAG_BITS_PER_SAMPLE,
     ExifInterface.TAG_COMPRESSED_BITS_PER_PIXEL,
@@ -228,8 +224,9 @@ public class ReceiveSharingIntentHelper {
             queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
           )
         );
-      } catch (Exception e) {}
-
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
       file.putMap("exif", exif);
 
       files.putMap("0", file);
