@@ -210,23 +210,8 @@ public class ReceiveSharingIntentHelper {
       file.putString("weblink", null);
       file.putString("subject", subject);
 
-      WritableMap exif = getExif(contentUri.toString());
-      try {
-        exif.putString(
-          "DateTimeModified",
-          queryResult.getString(
-            queryResult.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED)
-          )
-        );
-        exif.putString(
-          "ImageOrientation",
-          queryResult.getString(
-            queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
-          )
-        );
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      WritableMap exif = getMediaExif(contentUri.toString(), queryResult);
+
       file.putMap("exif", exif);
 
       files.putMap("0", file);
@@ -274,25 +259,8 @@ public class ReceiveSharingIntentHelper {
           file.putString("weblink", null);
           file.putString("subject", subject);
 
-          WritableMap exif = getExif(uri.toString());
-          try {
-            exif.putString(
-              "DateTimeModified",
-              queryResult.getString(
-                queryResult.getColumnIndex(
-                  MediaStore.Images.Media.DATE_MODIFIED
-                )
-              )
-            );
-            exif.putString(
-              "ImageOrientation",
-              queryResult.getString(
-                queryResult.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
-              )
-            );
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
+          WritableMap exif = getMediaExif(uri.toString(), queryResult);
+
           file.putMap("exif", exif);
 
           files.putMap(Integer.toString(index), file);
@@ -327,6 +295,52 @@ public class ReceiveSharingIntentHelper {
       exifMap.putString("originalUri", uri);
 
       return exifMap;
+    } catch (Exception e) {
+      e.printStackTrace();
+      WritableMap exifMap = new WritableNativeMap();
+      return exifMap;
+    }
+  }
+
+  // TODO: Expand with MediaMetadataRetriever for video metadata
+  // https://developer.android.com/reference/android/media/MediaMetadataRetriever
+  public WritableMap getMediaExif(String uri, Cursor queryCursor) {
+    try {
+      WritableMap exif = getExif(uri);
+
+      exif.putString(
+        "width",
+        queryCursor.getString(
+          queryCursor.getColumnIndex(MediaStore.Images.Media.WIDTH)
+        )
+      );
+      exif.putString(
+        "height",
+        queryCursor.getString(
+          queryCursor.getColumnIndex(MediaStore.Images.Media.HEIGHT)
+        )
+      );
+      // DATE_TAKEN is in miliseconds
+      Long dateTaken =
+        queryCursor.getLong(
+          queryCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN)
+        ) /
+        1000;
+      exif.putString("DateTimeTaken", dateTaken.toString());
+      exif.putString(
+        "DateTimeModified",
+        queryCursor.getString(
+          queryCursor.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED)
+        )
+      );
+      exif.putString(
+        "ImageOrientation",
+        queryCursor.getString(
+          queryCursor.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
+        )
+      );
+
+      return exif;
     } catch (Exception e) {
       e.printStackTrace();
       WritableMap exifMap = new WritableNativeMap();
