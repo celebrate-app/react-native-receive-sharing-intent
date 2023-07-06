@@ -45,7 +45,12 @@ class ReceiveSharingIntentModule implements IReceiveSharingIntent {
   clearReceivedFiles() {
     // https://github.com/ajith-ab/react-native-receive-sharing-intent/issues/149
     // this.isClear = true;
-    ReceiveSharingIntent.clearFileNames();
+
+    // TODO: Clearing file names on iOS causes 
+    // new files not being received until the app is restarted
+    if (!this.isIos) {
+      ReceiveSharingIntent.clearFileNames();
+    }
   }
 
   protected getFileNames(
