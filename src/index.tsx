@@ -1,3 +1,4 @@
-import ReceiveSharingIntentModule from "./ReceiveSharingIntent";
+import { useSharingIntent } from './useSharingIntent';
+import { clearReceivedFiles } from './ReceiveSharingIntent';
 
-export default new ReceiveSharingIntentModule();
+export { useSharingIntent, clearReceivedFiles };
