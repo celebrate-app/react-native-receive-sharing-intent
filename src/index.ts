@@ -1,3 +1,2 @@
 export { clearReceivedFiles } from './ReceiveSharingIntent';
 export { useSharingIntent } from './useSharingIntent';
-//# sourceMappingURL=index.js.map
