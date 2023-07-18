@@ -10,8 +10,6 @@ declare namespace ReceiveSharingIntent {
     extra: any;
   }
 
-  export type ShareIntentResponse = ShareIntentFile[];
-
   export function useSharingIntent(
     handler: Function,
     errorHandler: Function,
