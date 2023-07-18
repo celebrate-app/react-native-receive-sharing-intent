@@ -1,0 +1,56 @@
+name: Publish Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-type:
+        description: 'Release version type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - 'patch'
+          - 'minor'
+          - 'major'
+          - 'prepatch'
+          - 'preminor'
+          - 'premajor'
+
+jobs:
+  publish:
+    runs-on: buildjet-2vcpu-ubuntu-2204
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Git Config
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+          registry-url: https://npm.pkg.github.com/
+          scope: '@celebrate-app'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Publish package
+        run: |
+          if [[ "${{ github.event.inputs.version-type }}" == 'prepatch' || "${{ github.event.inputs.version-type }}" == 'preminor' || "${{ github.event.inputs.version-type }}" == 'premajor' ]]; then
+            yarn release ${{ github.event.inputs.version-type }} --preReleaseId=alpha --no-git
+          else
+            yarn release ${{ github.event.inputs.version-type }}
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
