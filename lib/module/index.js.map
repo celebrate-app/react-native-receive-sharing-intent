@@ -1,1 +1,0 @@
-{"version":3,"sources":["index.ts"],"names":["clearReceivedFiles","useSharingIntent"],"mappings":"AAAA,SAASA,kBAAT,QAAmC,wBAAnC;AACA,SAASC,gBAAT,QAAiC,oBAAjC","sourcesContent":["export { clearReceivedFiles } from './ReceiveSharingIntent';\nexport { useSharingIntent } from './useSharingIntent';\n"]}
