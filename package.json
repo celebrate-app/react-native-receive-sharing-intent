@@ -1,6 +1,6 @@
 {
   "name": "@celebrate-app/sharing-intent",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A React Native plugin that enables React Native apps to receive sharing photos, videos, text, urls or any other file types from another app.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -49,7 +49,7 @@
     "@celebrate-app:registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "mime-db": "1.52.0"
+    "mime-db": "^1.52.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^11.0.0",
@@ -173,8 +173,5 @@
         }
       ]
     ]
-  },
-  "dependencies": {
-    "mime-db": "^1.52.0"
   }
 }
