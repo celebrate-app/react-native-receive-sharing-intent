@@ -44,10 +44,14 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Get commit ID
+        id: commit_id
+        run: echo "::set-output name=commit_id::$(git rev-parse --short HEAD)"
+
       - name: Publish package
         run: |
           if [[ "${{ github.event.inputs.version-type }}" == 'prepatch' || "${{ github.event.inputs.version-type }}" == 'preminor' || "${{ github.event.inputs.version-type }}" == 'premajor' ]]; then
-            yarn release ${{ github.event.inputs.version-type }} --preReleaseId=alpha --no-git
+            yarn release ${{ github.event.inputs.version-type }} --preReleaseId=${{ steps.commit_id.outputs.commit_id }} --no-github.release --no-github.tag --no-git
           else
             yarn release ${{ github.event.inputs.version-type }}
           fi
