@@ -62,6 +62,10 @@ export function useSharingIntent(
         }
       );
 
+      // Running getFileNames here allows us to handle the case
+      // when app is opened via sharing intent but wasn't previously opened
+      getFileNames('');
+
       return () => {
         listener?.remove();
       };
