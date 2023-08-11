@@ -36,50 +36,6 @@ public class ReceiveSharingIntentHelper {
     this.context = context;
   }
 
-  // https://developer.android.com/reference/androidx/exifinterface/media/ExifInterface
-  private static final String[] EXIF_ATTRIBUTES = new String[] {
-    ExifInterface.TAG_DATETIME,
-    ExifInterface.TAG_DATETIME_ORIGINAL,
-    ExifInterface.TAG_IMAGE_LENGTH,
-    ExifInterface.TAG_IMAGE_WIDTH,
-    ExifInterface.TAG_DATETIME_DIGITIZED,
-    ExifInterface.TAG_EXPOSURE_TIME,
-    ExifInterface.TAG_FLASH,
-    ExifInterface.TAG_FOCAL_LENGTH,
-    ExifInterface.TAG_GPS_ALTITUDE,
-    ExifInterface.TAG_GPS_ALTITUDE_REF,
-    ExifInterface.TAG_GPS_DATESTAMP,
-    ExifInterface.TAG_GPS_LATITUDE,
-    ExifInterface.TAG_GPS_LATITUDE_REF,
-    ExifInterface.TAG_GPS_LONGITUDE,
-    ExifInterface.TAG_GPS_LONGITUDE_REF,
-    ExifInterface.TAG_GPS_PROCESSING_METHOD,
-    ExifInterface.TAG_GPS_TIMESTAMP,
-    ExifInterface.TAG_MAKE,
-    ExifInterface.TAG_MODEL,
-    ExifInterface.TAG_ORIENTATION,
-    ExifInterface.TAG_X_RESOLUTION,
-    ExifInterface.TAG_Y_RESOLUTION,
-    ExifInterface.TAG_SUBSEC_TIME,
-    ExifInterface.TAG_WHITE_BALANCE,
-    ExifInterface.TAG_BITS_PER_SAMPLE,
-    ExifInterface.TAG_COMPRESSED_BITS_PER_PIXEL,
-    ExifInterface.TAG_COLOR_SPACE,
-    ExifInterface.TAG_FLASH,
-    ExifInterface.TAG_SOFTWARE,
-    ExifInterface.TAG_Y_CB_CR_POSITIONING,
-    ExifInterface.TAG_RESOLUTION_UNIT,
-    ExifInterface.TAG_EXPOSURE_PROGRAM,
-    ExifInterface.TAG_EXIF_VERSION,
-    ExifInterface.TAG_EXPOSURE_BIAS_VALUE,
-    ExifInterface.TAG_MAX_APERTURE_VALUE,
-    ExifInterface.TAG_METERING_MODE,
-    ExifInterface.TAG_INTEROPERABILITY_INDEX,
-    ExifInterface.TAG_MAKER_NOTE,
-    ExifInterface.TAG_BITS_PER_SAMPLE,
-    ExifInterface.TAG_SHUTTER_SPEED_VALUE,
-  };
-
   @RequiresApi(api = Build.VERSION_CODES.KITKAT)
   public void sendFileNames(Context context, Intent intent, Promise promise) {
     try {
@@ -177,43 +133,9 @@ public class ReceiveSharingIntentHelper {
     WritableMap files = new WritableNativeMap();
 
     if (Objects.equals(intent.getAction(), Intent.ACTION_SEND)) {
-      WritableMap file = new WritableNativeMap();
       Uri contentUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
       if (contentUri == null) return null;
-      String filePath = FileDirectory.INSTANCE.getAbsolutePath(
-        context,
-        contentUri
-      );
-      ContentResolver contentResolver = context.getContentResolver();
-      file.putString("mimeType", contentResolver.getType(contentUri));
-      Cursor queryResult = contentResolver.query(
-        contentUri,
-        null,
-        null,
-        null,
-        null
-      );
-      queryResult.moveToFirst();
-      file.putString(
-        "fileName",
-        queryResult.getString(
-          queryResult.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-        )
-      );
-      file.putString(
-        "fileSize",
-        queryResult.getString(queryResult.getColumnIndex(OpenableColumns.SIZE))
-      );
-      file.putString("filePath", filePath);
-      file.putString("contentUri", contentUri.toString());
-      file.putString("text", null);
-      file.putString("weblink", null);
-      file.putString("subject", subject);
-
-      WritableMap exif = getMediaExif(contentUri.toString(), queryResult);
-
-      file.putMap("exif", exif);
-
+      WritableMap file = RNMediaInfoUtils.getCompleteMediaInfo(context, contentUri, subject);
       files.putMap("0", file);
     } else if (
       Objects.equals(intent.getAction(), Intent.ACTION_SEND_MULTIPLE)
@@ -224,45 +146,7 @@ public class ReceiveSharingIntentHelper {
       if (contentUris != null) {
         int index = 0;
         for (Uri uri : contentUris) {
-          WritableMap file = new WritableNativeMap();
-          ContentResolver contentResolver = context.getContentResolver();
-          String filePath = FileDirectory.INSTANCE.getAbsolutePath(
-            context,
-            uri
-          );
-
-          // Based on https://developer.android.com/training/secure-file-sharing/retrieve-info
-          file.putString("mimeType", contentResolver.getType(uri));
-          Cursor queryResult = contentResolver.query(
-            uri,
-            null,
-            null,
-            null,
-            null
-          );
-          queryResult.moveToFirst();
-          file.putString(
-            "fileName",
-            queryResult.getString(
-              queryResult.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            )
-          );
-          file.putString(
-            "fileSize",
-            queryResult.getString(
-              queryResult.getColumnIndex(OpenableColumns.SIZE)
-            )
-          );
-          file.putString("filePath", filePath);
-          file.putString("contentUri", uri.toString());
-          file.putString("text", null);
-          file.putString("weblink", null);
-          file.putString("subject", subject);
-
-          WritableMap exif = getMediaExif(uri.toString(), queryResult);
-
-          file.putMap("exif", exif);
-
+          WritableMap file = RNMediaInfoUtils.getCompleteMediaInfo(context, uri, subject);
           files.putMap(Integer.toString(index), file);
 
           index++;
@@ -271,81 +155,6 @@ public class ReceiveSharingIntentHelper {
     }
 
     return files;
-  }
-
-  public WritableMap getExif(String uri) {
-    try {
-      ExifInterface exif = createExifInterface(uri);
-
-      WritableMap exifMap = new WritableNativeMap();
-
-      for (String attribute : EXIF_ATTRIBUTES) {
-        String value = exif.getAttribute(attribute);
-
-        // Rename props for convenience
-        if (attribute == ExifInterface.TAG_IMAGE_LENGTH) {
-          exifMap.putString("height", value);
-        } else if (attribute == ExifInterface.TAG_IMAGE_WIDTH) {
-          exifMap.putString("width", value);
-        } else {
-          exifMap.putString(attribute, value);
-        }
-      }
-
-      exifMap.putString("originalUri", uri);
-
-      return exifMap;
-    } catch (Exception e) {
-      e.printStackTrace();
-      WritableMap exifMap = new WritableNativeMap();
-      return exifMap;
-    }
-  }
-
-  // TODO: Expand with MediaMetadataRetriever for video metadata
-  // https://developer.android.com/reference/android/media/MediaMetadataRetriever
-  public WritableMap getMediaExif(String uri, Cursor queryCursor) {
-    try {
-      WritableMap exif = getExif(uri);
-
-      exif.putString(
-        "width",
-        queryCursor.getString(
-          queryCursor.getColumnIndex(MediaStore.Images.Media.WIDTH)
-        )
-      );
-      exif.putString(
-        "height",
-        queryCursor.getString(
-          queryCursor.getColumnIndex(MediaStore.Images.Media.HEIGHT)
-        )
-      );
-      // DATE_TAKEN is in miliseconds
-      Long dateTaken =
-        queryCursor.getLong(
-          queryCursor.getColumnIndex(MediaStore.Images.Media.DATE_TAKEN)
-        ) /
-        1000;
-      exif.putString("DateTimeTaken", dateTaken.toString());
-      exif.putString(
-        "DateTimeModified",
-        queryCursor.getString(
-          queryCursor.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED)
-        )
-      );
-      exif.putString(
-        "ImageOrientation",
-        queryCursor.getString(
-          queryCursor.getColumnIndex(MediaStore.Images.Media.ORIENTATION)
-        )
-      );
-
-      return exif;
-    } catch (Exception e) {
-      e.printStackTrace();
-      WritableMap exifMap = new WritableNativeMap();
-      return exifMap;
-    }
   }
 
   public static Uri compatUriFromFile(final Context context, final File file) {
