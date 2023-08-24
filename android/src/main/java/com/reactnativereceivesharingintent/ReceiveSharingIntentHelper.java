@@ -114,7 +114,11 @@ public class ReceiveSharingIntentHelper {
         files.putMap("0", file);
         promise.resolve(files);
       } else {
-        promise.reject("error", "Invalid file type.");
+        WritableMap errorInfo = new WritableNativeMap();
+        WritableMap fileInfo = new WritableNativeMap();
+        fileInfo.putString("userInfo", action + "" + type);
+        errorInfo.putMap("fileInfo", fileInfo);
+        promise.reject("error", "file type is Invalid", errorInfo);
       }
     } catch (Exception e) {
       promise.reject("error", e.toString());
