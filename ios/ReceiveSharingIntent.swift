@@ -20,8 +20,13 @@ class ReceiveSharingIntent: NSObject {
                       ) -> Void {
         let fileUrl = URL(string: url)
         let json =  handleUrl(url: fileUrl);
-        if(json == "error"){
-            let error = NSError(domain: "", code: 400, userInfo: nil)
+        if (json == "error"){
+            let appDomain = Bundle.main.bundleIdentifier!
+            let userDefaults = UserDefaults(suiteName: "group.\(appDomain)")
+            let key = fileUrl?.host?.components(separatedBy: "=").last ?? ""
+            let fileInfo = userDefaults?.object(forKey: key) as? Any ?? fileUrl as Any
+            let errorInfo = ["fileInfo": fileInfo]
+            let error = NSError(domain: "", code: 400, userInfo: errorInfo)
             reject("message", "file type is Invalid", error);
         }else if(json == "invalid group name"){
             let error = NSError(domain: "", code: 400, userInfo: nil)

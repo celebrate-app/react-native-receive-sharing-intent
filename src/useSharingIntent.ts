@@ -40,7 +40,7 @@ export function useSharingIntent(
             getFileNames(res);
           }
         })
-        .catch(() => {});
+        .catch((e: any) => errorHandler(e));
 
       const listener: any = Linking.addEventListener('url', (res: any) => {
         const url = res ? res.url : '';
@@ -70,5 +70,5 @@ export function useSharingIntent(
         listener?.remove();
       };
     }
-  }, [getFileNames, protocol]);
+  }, [getFileNames, errorHandler, protocol]);
 }
